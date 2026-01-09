@@ -1,0 +1,36 @@
+# EloquenceAI Backend Dependencies
+# Python 3.12+ required
+
+# Server Infrastructure
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+websockets>=12.0
+
+# Computer Vision
+mediapipe>=0.10.14
+opencv-python>=4.9.0
+
+# Audio Processing
+librosa>=0.10.1
+soundfile>=0.12.1
+numba>=0.59.0
+
+# OpenAI
+openai>=1.10.0
+
+# Core Dependencies
+numpy>=1.26.3,<2.0.0
+python-dotenv>=1.0.0
+aiohttp>=3.9.1
+websockets>=12.0
+
+# Utilities
+pydantic>=2.5.3
+
+# OmniSense AI Modules
+deepface>=0.0.79
+transformers>=4.36.0
+torch>=2.1.0
+tf-keras>=2.15.0
+tensorflow>=2.15.0

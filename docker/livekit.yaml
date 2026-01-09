@@ -1,0 +1,24 @@
+port: 7880
+rtc:
+  port_range_start: 50000
+  port_range_end: 60000
+  use_external_ip: false
+
+redis:
+  address: redis:6379
+
+keys:
+  # Generated secure keys
+  APInnxVRJJDPghK: r42BeSdkIemn2HhKk4gr8Dt1w7DnRj8Pt9cpwxsx93m
+
+logging:
+  level: info
+  sample: false
+
+room:
+  auto_create: true
+  empty_timeout: 300
+  max_participants: 10
+
+turn:
+  enabled: false

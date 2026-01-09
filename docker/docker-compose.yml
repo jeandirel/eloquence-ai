@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: eloquence-livekit
+    command: --config /etc/livekit.yaml
+    ports:
+      - "7880:7880"  # HTTP API
+      - "7881:7881"  # WebRTC
+      - "7882:7882/udp"  # WebRTC UDP
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    networks:
+      - eloquence-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: eloquence-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - eloquence-network
+
+networks:
+  eloquence-network:
+    driver: bridge

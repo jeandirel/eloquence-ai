@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Base styles */
+* {
+  border-color: hsl(var(--border, 214.3 31.8% 91.4%));
+}
+
+body {
+  background-color: hsl(var(--background, 222.2 84% 4.9%));
+  color: hsl(var(--foreground, 210 40% 98%));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* CSS Variables */
+:root {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+}
+
+/* Glassmorphism utility classes */
+.glass {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
