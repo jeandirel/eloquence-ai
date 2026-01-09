@@ -1,164 +1,276 @@
-# EloquenceAI 🎤
+# 🎯 Eloquence AI
 
-> A Multimodal Human-Computer Interaction System for Real-Time Public Speaking Coaching
+**Multimodal AI Interface** - Real-time gesture detection, face tracking, emotion recognition, and speech analysis powered by MediaPipe, DeepFace, and LiveKit.
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Python](https://img.shields.io/badge/python-3.12+-blue)
-![Next.js](https://img.shields.io/badge/Next.js-16-black)
-![LiveKit](https://img.shields.io/badge/LiveKit-WebRTC-green)
+![Gesture Lab Demo](https://img.shields.io/badge/Status-Active-success)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
 
-## 📖 Overview
+---
 
-EloquenceAI is a cutting-edge public speaking coach that uses multimodal AI to provide real-time feedback on your presentation skills. It analyzes:
+## ✨ Features
 
-- 👁️ **Gaze Tracking**: Monitors eye contact via MediaPipe Face Mesh
-- 😊 **Emotion Detection**: Assesses facial valence and arousal
-- 🗣️ **Speech Analysis**: Tracks filler words, speaking rate, and prosody
-- 🧠 **Multimodal Fusion**: Detects dissonance between verbal and non-verbal cues
+### 🖐️ **Gesture Lab**
+- **7 Gesture Recognition**: FIST, OPEN_PALM, POINTING, PEACE, THUMBS_UP, OK, TCHAO
+- **Real-time Landmarks Visualization**: Hand (21 points) + Face (468 points)
+- **Multi-hand Detection**: Support for 2 hands simultaneously
+- **Low Latency**: 50ms frame processing (20 FPS)
+- **Visual Feedback**: Animated emoji overlays and pulse effects
 
-### The "Magic Mirror" Interface
+### 😊 **Emotion Recognition**
+- Real-time facial emotion detection using DeepFace
+- 7 emotions: Happy, Sad, Angry, Surprise, Fear, Disgust, Neutral
+- Adaptive UI based on detected emotion
+- Emotion history tracking
 
-EloquenceAI presents a live video feed augmented with intelligent, non-intrusive visual nudges. When your gaze drifts or your pace speeds up, subtle cues guide you back—without breaking your flow.
+### 👁️ **Gaze Tracking**
+- Eye movement detection
+- Attention monitoring
+- Gaze deviation alerts
 
-## 🏗️ Architecture
+### 🎤 **Speech Emotion Analysis** *(Coming Soon)*
+- Voice emotion recognition
+- Speech-to-text
+- Intent detection
 
-```
-┌─────────────────┐      WebRTC       ┌──────────────────┐
-│  Next.js App    │◄─────────────────►│  LiveKit Server  │
-│  (Frontend)     │                    │   (Docker)       │
-└─────────────────┘                    └──────────────────┘
-                                              │
-                                              │ Subscribe
-                                              ▼
-                                       ┌──────────────────┐
-                                       │  Python Agent    │
-                                       │  ┌────────────┐  │
-                                       │  │  Vision    │  │
-                                       │  │  Module    │  │
-                                       │  └────────────┘  │
-                                       │  ┌────────────┐  │
-                                       │  │  Audio     │  │
-                                       │  │  Module    │  │
-                                       │  └────────────┘  │
-                                       │  ┌────────────┐  │
-                                       │  │  Fusion    │  │
-                                       │  │  Engine    │  │
-                                       │  └────────────┘  │
-                                       └──────────────────┘
-```
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** 20+ and npm
-- **Python** 3.12+
-- **Docker** and Docker Compose
-- **OpenAI API Key** (for Realtime API)
+- **Python 3.12+**
+- **Node.js 18+**
+- **npm or yarn**
 
-### 1. Clone and Setup
+### Installation
 
+1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/jeandirel/eloquence-ai.git
 cd eloquence-ai
 ```
 
-### 2. Start LiveKit Server
-
+2. **Run the startup script**
 ```bash
-cd docker
-docker-compose up -d
-```
+# Windows
+.\start_gesture_lab.bat
 
-Verify on http://localhost:7880
+# Or manually start services:
+# Terminal 1 - MediaPipe Service
+cd backend/services/mediapipe_service
+python main.py
 
-### 3. Backend Setup
-
-```bash
+# Terminal 2 - Orchestrator
 cd backend
-python -m venv venv
-venv\Scripts\activate  # On Windows
-pip install -r requirements.txt
+python main.py
 
-# Configure environment
-copy .env.example .env
-# Edit .env with your OpenAI API key
-```
-
-### 4. Frontend Setup
-
-```bash
+# Terminal 3 - Frontend
 cd frontend
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000
-
-## 🧪 Running the Full System
-
-1. **Start LiveKit**: `docker-compose up -d` (in `docker/`)
-2. **Start Backend Agent**: `python main.py` (in `backend/`)
-3. **Start Frontend**: `npm run dev` (in `frontend/`)
-4. **Open Browser**: Navigate to http://localhost:3000
-
-## 📊 Project Structure
-
-```
-eloquence-ai/
-├── frontend/              # Next.js 16 application
-│   ├── app/              # App router pages
-│   ├── components/       # UI components (Magic Mirror, Analytics)
-│   └── lib/              # LiveKit client utilities
-├── backend/              # Python LiveKit Agent
-│   ├── agents/           # Vision, Audio, Fusion modules
-│   ├── models/           # ML model loaders
-│   └── main.py           # Entry point
-├── docker/               # LiveKit server configuration
-│   ├── docker-compose.yml
-│   └── livekit.yaml
-└── docs/                 # Documentation
-```
-
-## 🎯 Features
-
-### Real-Time Feedback
-- **Gaze Monitoring**: Get notified if you look away from the camera for >3 seconds
-- **Pace Control**: Visual nudges when speaking too fast (>160 WPM)
-- **Filler Detection**: Tracks "um," "uh," and other dysfluencies
-- **Emotion Guidance**: Alerts for low energy or dissonance between words and expression
-
-### Post-Session Analytics
-- **Timeline Visualization**: Scrub through your recording with synchronized metrics
-- **Communication Score**: See how your score evolved over the session
-- **Exportable Reports**: Download detailed performance summaries
-
-### Privacy-First Design
-- **Ephemeral Processing**: Video frames processed in RAM, never saved to disk
-- **Informed Consent**: Clear explanations of data usage
-- **Local-First Option**: Optional client-side processing for sensitive environments
-
-## 🛠️ Technology Stack
-
-- **Frontend**: Next.js 16, React 19, Shadcn UI, Tailwind CSS v4
-- **Backend**: Python 3.12, LiveKit Agents, MediaPipe, OpenAI Realtime API
-- **Infrastructure**: LiveKit (WebRTC), Docker, Redis
-- **ML Models**: MediaPipe Face Mesh, EfficientNet-B0 (Emotion), Librosa (Prosody)
-
-## 📜 License
-
-MIT License - See LICENSE file for details
-
-## 👥 Team
-
-This project was developed as part of a university HCI course, demonstrating the state-of-the-art in multimodal human-computer interaction.
-
-## 🙏 Acknowledgments
-
-- **LiveKit** for the incredible WebRTC infrastructure
-- **MediaPipe** team for efficient computer vision
-- **OpenAI** for cutting-edge speech models
+3. **Access the application**
+- **Gesture Lab**: http://localhost:3000/gestures
+- **Emotion Recognition**: http://localhost:3000/emotion
+- **Main Dashboard**: http://localhost:3000
 
 ---
 
-**Note**: This is an academic project. For production use, additional security hardening and compliance reviews are recommended.
+## 🏗️ Architecture
+
+```
+eloquence-ai/
+├── backend/
+│   ├── main.py                    # Orchestrator (WebSocket hub)
+│   ├── services/
+│   │   ├── mediapipe_service/     # Gesture & gaze detection
+│   │   ├── deepface_service/      # Emotion recognition
+│   │   └── audio_service/         # Speech processing
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── app/
+│   │   ├── gestures/              # Gesture Lab interface
+│   │   ├── emotion/               # Emotion detection UI
+│   │   └── page.tsx               # Main landing page
+│   ├── components/
+│   └── package.json
+│
+└── start_gesture_lab.bat          # Quick start script
+```
+
+### Tech Stack
+
+**Backend**
+- FastAPI (WebSocket server)
+- MediaPipe 0.10.14 (Hand & Face detection)
+- DeepFace (Emotion recognition)
+- NumPy, OpenCV
+
+**Frontend**
+- Next.js 14 (React framework)
+- TypeScript
+- Framer Motion (Animations)
+- TailwindCSS
+- Canvas API (Landmarks rendering)
+
+---
+
+## 🎮 Usage
+
+### Gesture Lab
+
+1. Open http://localhost:3000/gestures
+2. Allow camera access
+3. Perform gestures in front of the camera:
+   - ✊ **FIST**: Close your hand
+   - ✋ **OPEN_PALM**: Open all fingers
+   - ☝️ **POINTING**: Raise index finger only
+   - ✌️ **PEACE**: Victory sign (index + middle)
+   - 👍 **THUMBS_UP**: Raise thumb only
+   - 👌 **OK**: Circle with thumb + index
+   - 👋 **TCHAO**: Open hand with lateral movement
+
+### Emotion Recognition
+
+1. Open http://localhost:3000/emotion
+2. Allow camera access
+3. Your facial emotion will be detected in real-time
+4. UI adapts based on detected emotion
+
+---
+
+## 📊 Performance
+
+| Metric | Value |
+|--------|-------|
+| **Gesture Detection FPS** | 20 FPS |
+| **Frame Latency** | 50ms |
+| **Landmarks (Hand)** | 21 points |
+| **Landmarks (Face)** | 468 points |
+| **Supported Gestures** | 7 |
+| **Validation Threshold** | 4/5 frames |
+
+---
+
+## 🛠️ Configuration
+
+### Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+# Orchestrator
+ORCHESTRATOR_PORT=8000
+ORCHESTRATOR_HOST=0.0.0.0
+
+# MediaPipe Service
+MEDIAPIPE_PORT=8002
+
+# DeepFace Service
+DEEPFACE_PORT=8003
+
+# Audio Service
+AUDIO_PORT=8001
+```
+
+---
+
+## 📝 API Reference
+
+### WebSocket Endpoint
+
+**URL**: `ws://localhost:8000/ws`
+
+**Message Format** (Client → Server):
+```typescript
+// Video frame
+Blob([0x00, ...imageData])
+
+// Audio chunk
+Blob([0x01, ...audioData])
+```
+
+**Message Format** (Server → Client):
+```json
+{
+  "type": "UI_COMMAND",
+  "source": "GESTURE",
+  "command": "APPROVE",
+  "gesture": "THUMBS_UP",
+  "hand_landmarks": [[{"x": 0.5, "y": 0.5, "z": 0.0}, ...]],
+  "face_landmarks": [[{"x": 0.5, "y": 0.3, "z": 0.0}, ...]],
+  "hand_connections": [[0, 1], [1, 2], ...],
+  "face_connections": [[0, 1], ...]
+}
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd backend
+pytest
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details
+
+---
+
+## 👤 Author
+
+**Jean Direl**
+- GitHub: [@jeandirel](https://github.com/jeandirel)
+- Email: jedirkab70@gmail.com
+
+---
+
+## 🙏 Acknowledgments
+
+- **MediaPipe** by Google for hand and face tracking
+- **DeepFace** for emotion recognition
+- **Next.js** team for the amazing framework
+- **Framer Motion** for smooth animations
+
+---
+
+## 🐛 Known Issues
+
+- MediaPipe requires specific version (0.10.14) for `solutions` API
+- Large model files excluded from git (see `.gitignore`)
+
+---
+
+## 🔮 Roadmap
+
+- [ ] Custom gesture training
+- [ ] Multi-user support
+- [ ] 3D hand tracking
+- [ ] Gesture sequence recognition
+- [ ] Export recorded sessions
+- [ ] Mobile support
+
+---
+
+## 📞 Support
+
+For issues and questions:
+- Create an issue on [GitHub Issues](https://github.com/jeandirel/eloquence-ai/issues)
+- Email: jedirkab70@gmail.com
+
+---
+
+**Made with ❤️ for Human-Computer Interaction**
