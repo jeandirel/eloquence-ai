@@ -36,6 +36,65 @@ MEDIAPIPE_URL = "http://localhost:8002"
 DEEPFACE_URL = "http://localhost:8003"
 AUDIO_URL = "http://localhost:8001"
 
+class SessionManager:
+    """Manages recording of session data (emotions, gestures)."""
+    def __init__(self):
+        self.active = False
+        self.start_time = 0
+        self.emotions_log = []
+        self.gestures_log = []
+        self.events_timeline = []
+    
+    def start_session(self):
+        self.active = True
+        import time
+        self.start_time = time.time()
+        self.emotions_log = []
+        self.gestures_log = []
+        self.events_timeline = []
+        logger.info("Session STARTED")
+
+    def stop_session(self):
+        if not self.active:
+            return None
+        self.active = False
+        import time
+        duration = time.time() - self.start_time
+        
+        # Calculate stats
+        emotion_counts = {}
+        for e in self.emotions_log:
+            emotion_counts[e] = emotion_counts.get(e, 0) + 1
+            
+        gesture_counts = {}
+        for g in self.gestures_log:
+            gesture_counts[g] = gesture_counts.get(g, 0) + 1
+            
+        report = {
+            "duration_seconds": round(duration, 2),
+            "emotion_stats": emotion_counts,
+            "gesture_stats": gesture_counts,
+            "timeline": self.events_timeline
+        }
+        logger.info(f"Session STOPPED. Report: {report}")
+        return report
+
+    def log_emotion(self, emotion):
+        if self.active:
+            self.emotions_log.append(emotion)
+            
+    def log_gesture(self, gesture):
+        if self.active:
+            self.gestures_log.append(gesture)
+            import time
+            self.events_timeline.append({
+                "time": round(time.time() - self.start_time, 2),
+                "type": "GESTURE",
+                "value": gesture
+            })
+
+session_manager = SessionManager()
+
 class FusionEngine:
     """Synthesizes multimodal inputs."""
     
@@ -49,6 +108,10 @@ class FusionEngine:
             # Emotion-based UI adaptation
             if "emotion" in vision_data:
                 emotion = vision_data["emotion"]
+                
+                # Log to session
+                session_manager.log_emotion(emotion)
+                
                 if emotion != self.last_emotion:
                     self.last_emotion = emotion
                     
@@ -74,6 +137,10 @@ class FusionEngine:
                 gesture = vision_data["gesture"]
                 command = None
                 
+                # Log to session
+                if gesture != "UNKNOWN":
+                    session_manager.log_gesture(gesture)
+
                 if gesture == "FIST":
                     command = "SELECT_ITEM"
                 elif gesture == "OPEN_PALM":
@@ -168,14 +235,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         files={"file": ("frame.jpg", io.BytesIO(payload), "image/jpeg")}
                     )
                     mp_result = mp_response.json()
-                    # Call DeepFace (throttled logic could stay here or be simplified)
-                    # For now keep as is or merge if needed
-                    # Merge results (omitted DeepFace call for speed in this snippet for brevity if not strictly needed every frame, 
-                    # but keeping original logic flow is safer)
-                    
-                    # Simplified for stability: Just sending MediaPipe result first to ensure flow
-                    # Or keep original deepface logic if it was working
-                    
                     
                     # Call DeepFace (Optional - Don't block Gesture Lab if this fails)
                     df_result = {}
@@ -197,6 +256,25 @@ async def websocket_endpoint(websocket: WebSocket):
                 except Exception as e:
                     logger.error(f"Vision error: {e}")
             
+            elif data_type == 2: # JSON Control Message
+                # Handle control messages like START/STOP SESSION
+                try:
+                    import json
+                    message = json.loads(payload.decode('utf-8'))
+                    if message.get("type") == "SESSION_CONTROL":
+                        action = message.get("action")
+                        if action == "START":
+                            session_manager.start_session()
+                        elif action == "STOP":
+                            report = session_manager.stop_session()
+                            if report:
+                                await websocket.send_json({
+                                    "type": "SESSION_REPORT",
+                                    "report": report
+                                })
+                except Exception as e:
+                    logger.error(f"Control message error: {e}")
+
             elif data_type == 1:  # Audio
                 # Buffer audio
                 audio_buffer.extend(payload)

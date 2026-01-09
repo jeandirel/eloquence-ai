@@ -10,6 +10,31 @@ export default function EmotionAI() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const wsRef = useRef<WebSocket | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+
+    const startSession = () => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            const message = JSON.stringify({
+                type: "SESSION_CONTROL",
+                action: "START"
+            });
+            const blob = new Blob([new Uint8Array([2]), message], { type: 'application/json' });
+            wsRef.current.send(blob);
+            setIsRecording(true);
+        }
+    };
+
+    const stopSession = () => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            const message = JSON.stringify({
+                type: "SESSION_CONTROL",
+                action: "STOP"
+            });
+            const blob = new Blob([new Uint8Array([2]), message], { type: 'application/json' });
+            wsRef.current.send(blob);
+            setIsRecording(false);
+        }
+    };
 
     // Live Data
     const [currentEmotion, setCurrentEmotion] = useState("Neutral");
@@ -27,6 +52,12 @@ export default function EmotionAI() {
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+
+            if (data.type === "SESSION_REPORT") {
+                localStorage.setItem('last_session_report', JSON.stringify(data.report));
+                router.push('/report');
+            }
+
             if (data.type === "UI_ADAPTATION") {
                 setCurrentEmotion(data.emotion);
 
@@ -166,6 +197,24 @@ export default function EmotionAI() {
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                         SYSTEM ONLINE
                     </div>
+                    {/* Session Controls */}
+                    {!isRecording ? (
+                        <button
+                            onClick={startSession}
+                            className="flex items-center gap-2 px-4 py-1.5 bg-green-500/20 text-green-400 border border-green-500/50 rounded-lg hover:bg-green-500/30 transition shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                        >
+                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                            <span className="tracking-wider text-[10px] font-bold">REC</span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={stopSession}
+                            className="flex items-center gap-2 px-4 py-1.5 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                        >
+                            <div className="w-2 h-2 bg-red-400 rounded-sm" />
+                            <span className="tracking-wider text-[10px] font-bold">STOP</span>
+                        </button>
+                    )}
                 </div>
             </header>
 

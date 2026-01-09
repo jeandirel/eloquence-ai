@@ -19,6 +19,7 @@ export default function GestureLab() {
     const wsRef = useRef<WebSocket | null>(null);
 
     const [gesture, setGesture] = useState("Scanning...");
+    const [isRecording, setIsRecording] = useState(false);
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:8000/ws");
@@ -26,6 +27,13 @@ export default function GestureLab() {
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+
+            if (data.type === "SESSION_REPORT") {
+                // Save report and redirect
+                localStorage.setItem('last_session_report', JSON.stringify(data.report));
+                router.push('/report');
+            }
+
             if (data.type === "UI_COMMAND" && data.source === "GESTURE") {
                 setGesture(data.gesture || data.command);
 
@@ -184,6 +192,32 @@ export default function GestureLab() {
         "TCHAO": "👋"
     };
 
+    const startSession = () => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            const message = JSON.stringify({
+                type: "SESSION_CONTROL",
+                action: "START"
+            });
+            // Send as Blob with prefix 2 (Control)
+            const blob = new Blob([new Uint8Array([2]), message], { type: 'application/json' });
+            wsRef.current.send(blob);
+            setIsRecording(true);
+        }
+    };
+
+    const stopSession = () => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            const message = JSON.stringify({
+                type: "SESSION_CONTROL",
+                action: "STOP"
+            });
+            // Send as Blob with prefix 2 (Control)
+            const blob = new Blob([new Uint8Array([2]), message], { type: 'application/json' });
+            wsRef.current.send(blob);
+            setIsRecording(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-omni-bg text-white font-sans p-8">
             <header className="flex items-center gap-4 mb-12">
@@ -191,12 +225,32 @@ export default function GestureLab() {
                     <ArrowLeft className="w-6 h-6" />
                 </button>
                 <h1 className="text-2xl font-bold tracking-tight">Gesture Lab</h1>
+
+                <div className="ml-auto flex items-center gap-4">
+                    {!isRecording ? (
+                        <button
+                            onClick={startSession}
+                            className="flex items-center gap-2 px-6 py-2 bg-green-500 text-black rounded-lg font-bold hover:bg-green-400 transition shadow-lg shadow-green-500/20"
+                        >
+                            <div className="w-3 h-3 bg-black rounded-full animate-pulse" />
+                            Start Session
+                        </button>
+                    ) : (
+                        <button
+                            onClick={stopSession}
+                            className="flex items-center gap-2 px-6 py-2 bg-red-500 text-black rounded-lg font-bold hover:bg-red-400 transition shadow-lg shadow-red-500/20"
+                        >
+                            <div className="w-3 h-3 bg-black rounded-sm" />
+                            Stop Session
+                        </button>
+                    )}
+                </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
 
                 {/* Main Feed */}
-                <div className="lg:col-span-2 relative aspect-video bg-black rounded-3xl overflow-hidden border border-white/10 group">
+                <div className={`lg:col-span-2 relative aspect-video bg-black rounded-3xl overflow-hidden border transition-colors duration-300 group ${isRecording ? 'border-red-500/50 shadow-2xl shadow-red-900/20' : 'border-white/10'}`}>
                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />
 
                     {/* Overlay Canvas for Landmarks */}
